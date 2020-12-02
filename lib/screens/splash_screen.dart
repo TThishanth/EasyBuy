@@ -1,12 +1,11 @@
 import 'dart:async';
 
-import 'package:eCommerce/screens/auth_screen.dart';
+import 'package:eCommerce/screens/auth/auth_screen.dart';
 import 'package:eCommerce/screens/home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:page_transition/page_transition.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -23,21 +22,19 @@ class _SplashScreenState extends State<SplashScreen> {
       if (_user != null) {
         Navigator.pushReplacement(
           context,
-          PageTransition(
-            child: HomeScreen(),
-            type: PageTransitionType.rightToLeftWithFade,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(),
           ),
         );
       } else {
         Navigator.pushReplacement(
           context,
-          PageTransition(
-            child: AuthScreen(),
-            type: PageTransitionType.rightToLeftWithFade,
+          MaterialPageRoute(
+            builder: (context) => AuthScreen(),
           ),
         );
       }
-    }); 
+    });
   }
 
   @override
