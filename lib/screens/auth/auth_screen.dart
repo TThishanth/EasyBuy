@@ -1,7 +1,11 @@
+import 'package:eCommerce/services/auth_services.dart';
+import 'package:eCommerce/widgets/progress_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eCommerce/screens/auth/forgot_password_screen.dart';
+import 'package:provider/provider.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -9,8 +13,56 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _reTypePasswordController =
+      TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   var _isLogIn = true;
-  //var _isLoading;
+  var _isLoading = false;
+
+  _submitForm(
+      String name, String email, String password, BuildContext context) {
+    final _isValid = _formKey.currentState.validate();
+    FocusScope.of(context).unfocus();
+
+    if (_isValid) {
+      try {
+        setState(() {
+          _isLoading = true;
+        });
+
+        if (_isLogIn) {
+          Provider.of<Authentication>(context, listen: false)
+              .signIn(email, password, context);
+        } else {
+          Provider.of<Authentication>(context, listen: false)
+              .signUp(name, email, password, context);
+        }
+      } on FirebaseAuthException catch (e) {
+        var message = 'An error occured, Please check your credentials.';
+
+        if (e.message != null) {
+          message = e.message;
+        }
+
+        Scaffold.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Theme.of(context).errorColor,
+          ),
+        );
+
+        setState(() {
+          _isLoading = false;
+        });
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Size _size = MediaQuery.of(context).size;
@@ -64,143 +116,194 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                     ),
                   ),
-                  if (!_isLogIn)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 80.0),
-                      child: Container(
-                        height: _size.height * 0.08,
-                        width: _size.width * 0.8,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[500].withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                        child: Center(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0),
-                                child: Icon(
-                                  FontAwesomeIcons.user,
-                                  size: 28,
-                                  color: Colors.white,
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        if (!_isLogIn)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 80.0),
+                            child: Container(
+                              height: _size.height * 0.08,
+                              width: _size.width * 0.8,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[500].withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
+                              child: Center(
+                                child: TextFormField(
+                                  controller: _nameController,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20.0),
+                                      child: Icon(
+                                        FontAwesomeIcons.user,
+                                        size: 28,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    hintText: 'Name',
+                                    hintStyle: TextStyle(color: Colors.white60),
+                                  ),
+                                  style: TextStyle(color: Colors.white),
+                                  keyboardType: TextInputType.name,
+                                  autocorrect: true,
+                                  textCapitalization: TextCapitalization.words,
+                                  enableSuggestions: false,
+                                  textInputAction: TextInputAction.next,
+                                  validator: (value) {
+                                    if (value.isEmpty) {
+                                      return 'Please enter your name';
+                                    } else if (value.trim().length < 4) {
+                                      return 'Username must be atleast 4 letters long';
+                                    }
+                                    return null;
+                                  },
                                 ),
                               ),
-                              hintText: 'Name',
-                              hintStyle: TextStyle(color: Colors.white60),
                             ),
-                            style: TextStyle(color: Colors.white),
-                            keyboardType: TextInputType.name,
-                            textInputAction: TextInputAction.next,
                           ),
-                        ),
-                      ),
-                    ),
-                  Padding(
-                    padding: EdgeInsets.only(top: _isLogIn ? 180.0 : 20.0),
-                    child: Container(
-                      height: _size.height * 0.08,
-                      width: _size.width * 0.8,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[500].withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(16.0),
-                      ),
-                      child: Center(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            prefixIcon: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Icon(
-                                FontAwesomeIcons.envelope,
-                                size: 28,
-                                color: Colors.white,
+                        Padding(
+                          padding:
+                              EdgeInsets.only(top: _isLogIn ? 180.0 : 20.0),
+                          child: Container(
+                            height: _size.height * 0.08,
+                            width: _size.width * 0.8,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[500].withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            child: Center(
+                              child: TextFormField(
+                                controller: _emailController,
+                                autocorrect: false,
+                                textCapitalization: TextCapitalization.none,
+                                enableSuggestions: false,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20.0),
+                                    child: Icon(
+                                      FontAwesomeIcons.envelope,
+                                      size: 28,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  hintText: 'Email',
+                                  hintStyle: TextStyle(color: Colors.white60),
+                                ),
+                                style: TextStyle(color: Colors.white),
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'Please enter your email address';
+                                  } else if (!value.contains('@')) {
+                                    return 'Please enter a valid email address';
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
-                            hintText: 'Email',
-                            hintStyle: TextStyle(color: Colors.white60),
                           ),
-                          style: TextStyle(color: Colors.white),
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
                         ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10.0,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: Container(
-                      height: _size.height * 0.08,
-                      width: _size.width * 0.8,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[500].withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(16.0),
-                      ),
-                      child: Center(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            prefixIcon: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Icon(
-                                Icons.lock_outline,
-                                size: 28,
-                                color: Colors.white,
+                        SizedBox(
+                          height: 10.0,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: Container(
+                            height: _size.height * 0.08,
+                            width: _size.width * 0.8,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[500].withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            child: Center(
+                              child: TextFormField(
+                                controller: _passwordController,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20.0),
+                                    child: Icon(
+                                      Icons.lock_outline,
+                                      size: 28,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  hintText: 'Password',
+                                  hintStyle: TextStyle(color: Colors.white60),
+                                ),
+                                style: TextStyle(color: Colors.white),
+                                obscureText: true,
+                                keyboardType: TextInputType.name,
+                                textInputAction: _isLogIn
+                                    ? TextInputAction.done
+                                    : TextInputAction.next,
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'Please enter a password';
+                                  } else if (value.trim().length < 7) {
+                                    return 'Password must be atleast 7 characters';
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
-                            hintText: 'Password',
-                            hintStyle: TextStyle(color: Colors.white60),
                           ),
-                          style: TextStyle(color: Colors.white),
-                          obscureText: true,
-                          keyboardType: TextInputType.name,
-                          textInputAction: _isLogIn
-                              ? TextInputAction.done
-                              : TextInputAction.next,
                         ),
-                      ),
-                    ),
-                  ),
-                  if (!_isLogIn)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: Container(
-                        height: _size.height * 0.08,
-                        width: _size.width * 0.8,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[500].withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                        child: Center(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0),
-                                child: Icon(
-                                  Icons.lock_outline,
-                                  size: 28,
-                                  color: Colors.white,
+                        if (!_isLogIn)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0),
+                            child: Container(
+                              height: _size.height * 0.08,
+                              width: _size.width * 0.8,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[500].withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
+                              child: Center(
+                                child: TextFormField(
+                                  controller: _reTypePasswordController,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20.0),
+                                      child: Icon(
+                                        Icons.lock_outline,
+                                        size: 28,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    hintText: 'Re-type Password',
+                                    hintStyle: TextStyle(color: Colors.white60),
+                                  ),
+                                  style: TextStyle(color: Colors.white),
+                                  obscureText: true,
+                                  keyboardType: TextInputType.name,
+                                  textInputAction: TextInputAction.done,
+                                  validator: (value) {
+                                    if (value.isEmpty) {
+                                      return 'Please re-type your password';
+                                    } else if (value.trim() !=
+                                        _passwordController.text.trim()) {
+                                      return 'Password did\'t match, Please re-enter password';
+                                    }
+                                    return null;
+                                  },
                                 ),
                               ),
-                              hintText: 'Re-type Password',
-                              hintStyle: TextStyle(color: Colors.white60),
                             ),
-                            style: TextStyle(color: Colors.white),
-                            obscureText: true,
-                            keyboardType: TextInputType.name,
-                            textInputAction: TextInputAction.done,
                           ),
-                        ),
-                      ),
+                      ],
                     ),
+                  ),
                   if (_isLogIn)
                     Container(
                       margin: EdgeInsets.only(right: 25.0),
@@ -223,25 +326,32 @@ class _AuthScreenState extends State<AuthScreen> {
                   SizedBox(
                     height: _isLogIn ? 30 : 30.0,
                   ),
-                  Container(
-                    height: _size.height * 0.08,
-                    width: _size.width * 0.8,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16.0),
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    child: FlatButton(
-                      onPressed: () {},
-                      child: Text(
-                        _isLogIn ? 'Sign In' : 'Sign Up',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
+                  _isLoading
+                      ? circularProgress()
+                      : Container(
+                          height: _size.height * 0.08,
+                          width: _size.width * 0.8,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16.0),
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          child: FlatButton(
+                            onPressed: () => _submitForm(
+                              _nameController.text.trim(),
+                              _emailController.text.trim(),
+                              _passwordController.text.trim(),
+                              context,
+                            ),
+                            child: Text(
+                              _isLogIn ? 'Sign In' : 'Sign Up',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
                   SizedBox(
                     height: 5.0,
                   ),
@@ -281,5 +391,14 @@ class _AuthScreenState extends State<AuthScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _reTypePasswordController.dispose();
   }
 }
