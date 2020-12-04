@@ -134,6 +134,11 @@ class _AuthScreenState extends State<AuthScreen> {
                                 child: TextFormField(
                                   controller: _nameController,
                                   decoration: InputDecoration(
+                                    errorStyle: TextStyle(
+                                      color: Colors.white,
+                                      backgroundColor: Colors.redAccent,
+                                      fontSize: 14.0,
+                                    ),
                                     border: InputBorder.none,
                                     prefixIcon: Padding(
                                       padding: const EdgeInsets.symmetric(
@@ -182,6 +187,11 @@ class _AuthScreenState extends State<AuthScreen> {
                                 textCapitalization: TextCapitalization.none,
                                 enableSuggestions: false,
                                 decoration: InputDecoration(
+                                  errorStyle: TextStyle(
+                                    color: Colors.white,
+                                    backgroundColor: Colors.redAccent,
+                                    fontSize: 14.0,
+                                  ),
                                   border: InputBorder.none,
                                   prefixIcon: Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -226,6 +236,11 @@ class _AuthScreenState extends State<AuthScreen> {
                               child: TextFormField(
                                 controller: _passwordController,
                                 decoration: InputDecoration(
+                                  errorStyle: TextStyle(
+                                    color: Colors.white,
+                                    backgroundColor: Colors.redAccent,
+                                    fontSize: 14.0,
+                                  ),
                                   border: InputBorder.none,
                                   prefixIcon: Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -271,6 +286,11 @@ class _AuthScreenState extends State<AuthScreen> {
                                 child: TextFormField(
                                   controller: _reTypePasswordController,
                                   decoration: InputDecoration(
+                                    errorStyle: TextStyle(
+                                      color: Colors.white,
+                                      backgroundColor: Colors.redAccent,
+                                      fontSize: 14.0,
+                                    ),
                                     border: InputBorder.none,
                                     prefixIcon: Padding(
                                       padding: const EdgeInsets.symmetric(
