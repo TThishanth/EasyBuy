@@ -1,5 +1,6 @@
-import 'package:eCommerce/providers/card_item_counter_provider.dart';
+import 'package:eCommerce/providers/card_provider.dart';
 import 'package:eCommerce/providers/products_provider.dart';
+import 'package:eCommerce/screens/user/cart_screen.dart';
 import 'package:eCommerce/widgets/drawer_widget.dart';
 import 'package:eCommerce/widgets/product_item_widget.dart';
 import 'package:flutter/material.dart';
@@ -7,12 +8,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class ProductsOverviewScreen extends StatefulWidget {
-  @override
-  _ProductsOverviewScreenState createState() => _ProductsOverviewScreenState();
-}
-
-class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
+class ProductsOverviewScreen extends StatelessWidget {
+  static const routeName = '/home';
   AppBar appBar(context) {
     return AppBar(
       backgroundColor: Colors.white,
@@ -51,7 +48,9 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
           children: [
             IconButton(
               icon: Icon(FontAwesomeIcons.shoppingCart),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).pushNamed(CartScreen.routeName);
+              },
             ),
             Positioned(
               top: 6.0,
@@ -66,10 +65,10 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
                   minHeight: 17,
                   minWidth: 17,
                 ),
-                child: Consumer<CartItemCounter>(
-                  builder: (context, counter, _) {
+                child: Consumer<Cart>(
+                  builder: (_, cart, ch) {
                     return Text(
-                      counter.count.toString(),
+                      cart.itemCount.toString(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,

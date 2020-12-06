@@ -1,7 +1,11 @@
-import 'package:eCommerce/providers/card_item_counter_provider.dart';
+import 'package:eCommerce/providers/card_provider.dart';
+import 'package:eCommerce/providers/orders_provider.dart';
 import 'package:eCommerce/providers/products_provider.dart';
 import 'package:eCommerce/screens/splash_screen.dart';
+import 'package:eCommerce/screens/user/cart_screen.dart';
+import 'package:eCommerce/screens/user/orders_screen.dart';
 import 'package:eCommerce/screens/user/product_detail_screen.dart';
+import 'package:eCommerce/screens/user/product_overview_screen.dart';
 import 'package:eCommerce/services/auth_services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -22,10 +26,13 @@ class MyApp extends StatelessWidget {
           value: Authentication(),
         ),
         ChangeNotifierProvider.value(
-          value: CartItemCounter(),
+          value: Cart(),
         ),
         ChangeNotifierProvider.value(
           value: Products(),
+        ),
+        ChangeNotifierProvider.value(
+          value: Orders(),
         ),
       ],
       child: MaterialApp(
@@ -39,6 +46,9 @@ class MyApp extends StatelessWidget {
         home: SplashScreen(),
         routes: {
           ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
+          CartScreen.routeName: (ctx) => CartScreen(),
+          OrdersScreen.routeName: (ctx) => OrdersScreen(),
+          ProductsOverviewScreen.routeName: (ctx) => ProductsOverviewScreen(),
         },
       ),
     );

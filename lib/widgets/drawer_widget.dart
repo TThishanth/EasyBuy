@@ -1,5 +1,8 @@
+import 'package:eCommerce/providers/products_provider.dart';
 import 'package:eCommerce/screens/auth/auth_screen.dart';
 import 'package:eCommerce/screens/home_screen.dart';
+import 'package:eCommerce/screens/user/orders_screen.dart';
+import 'package:eCommerce/screens/user/product_overview_screen.dart';
 import 'package:eCommerce/services/auth_services.dart';
 import 'package:eCommerce/widgets/progress_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,6 +19,10 @@ class _DrawerWidgetState extends State<DrawerWidget> {
   final currentUserId = FirebaseAuth.instance.currentUser.uid;
   @override
   Widget build(BuildContext context) {
+    final productsContainer = Provider.of<Products>(
+      context,
+      listen: false,
+    );
     return FutureBuilder(
       future: usersRef.doc(currentUserId).get(),
       builder: (context, snapshot) {
@@ -28,8 +35,14 @@ class _DrawerWidgetState extends State<DrawerWidget> {
             padding: EdgeInsets.zero,
             children: <Widget>[
               UserAccountsDrawerHeader(
-                accountName: Text(userData['userName'], style: TextStyle(color: Colors.white),),
-                accountEmail: Text(userData['email'], style: TextStyle(color: Colors.white),),
+                accountName: Text(
+                  userData['userName'],
+                  style: TextStyle(color: Colors.white),
+                ),
+                accountEmail: Text(
+                  userData['email'],
+                  style: TextStyle(color: Colors.white),
+                ),
                 currentAccountPicture: CircleAvatar(
                   backgroundColor: Colors.grey,
                 ),
@@ -43,7 +56,35 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   color: Theme.of(context).accentColor,
                 ),
                 title: Text('Home'),
+                onTap: () {
+                  productsContainer.showAll();
+                  Navigator.of(context).pushReplacementNamed(ProductsOverviewScreen.routeName);
+                },
               ),
+              Divider(),
+              ListTile(
+                leading: Icon(
+                  Icons.favorite,
+                  color: Theme.of(context).accentColor,
+                ),
+                title: Text('Wish List'),
+                onTap: () {
+                  productsContainer.showFavoritesOnly();
+                  Navigator.of(context).pushReplacementNamed(ProductsOverviewScreen.routeName);
+                },
+              ),
+              Divider(),
+              ListTile(
+                leading: Icon(
+                  Icons.payment,
+                  color: Theme.of(context).accentColor,
+                ),
+                title: Text('My Orders'),
+                onTap: () {
+                  Navigator.of(context).pushReplacementNamed(OrdersScreen.routeName);
+                },
+              ),
+              Divider(),
               ListTile(
                 leading: Icon(
                   FontAwesomeIcons.signOutAlt,
