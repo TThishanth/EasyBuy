@@ -1,3 +1,4 @@
+import 'package:eCommerce/screens/admin/admin_home_screen.dart';
 import 'package:flutter/foundation.dart';
 
 class Product with ChangeNotifier {
@@ -21,8 +22,19 @@ class Product with ChangeNotifier {
     this.isFavorite = false,
   });
 
-  void toggleFavoriteStatus() {
+  Future<void> toggleFavoriteStatus(id) async {
+    final oldStatus = isFavorite;
     isFavorite = !isFavorite;
     notifyListeners();
+
+    try {
+      await productsRef.doc(id).update({
+        'isFavorite': isFavorite,
+      });
+
+    } catch (error) {
+      isFavorite = oldStatus;
+      notifyListeners();
+    }
   }
 }

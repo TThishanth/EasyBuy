@@ -1,9 +1,13 @@
+import 'package:eCommerce/providers/products_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class UserProductItem extends StatelessWidget {
+  final String id;
   final String title;
   final String imageUrl;
   UserProductItem({
+    this.id,
     this.title,
     this.imageUrl,
   });
@@ -18,20 +22,20 @@ class UserProductItem extends StatelessWidget {
           backgroundImage: NetworkImage(imageUrl),
         ),
         trailing: Container(
-          width: 100,
-          child: Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.edit),
-                color: Colors.blue,
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: Icon(Icons.delete),
-                color: Theme.of(context).errorColor,
-                onPressed: () {},
-              ),
-            ],
+          child: IconButton(
+            icon: Icon(Icons.delete),
+            color: Theme.of(context).errorColor,
+            onPressed: () {
+              try {
+                Provider.of<Products>(context, listen: false).deleteProduct(id);
+              } catch (error) {
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Deleting failed!'),
+                  ),
+                );
+              }
+            },
           ),
         ),
       ),

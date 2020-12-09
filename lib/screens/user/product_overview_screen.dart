@@ -3,13 +3,40 @@ import 'package:eCommerce/providers/products_provider.dart';
 import 'package:eCommerce/screens/user/cart_screen.dart';
 import 'package:eCommerce/widgets/drawer_widget.dart';
 import 'package:eCommerce/widgets/product_item_widget.dart';
+import 'package:eCommerce/widgets/progress_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class ProductsOverviewScreen extends StatelessWidget {
+class ProductsOverviewScreen extends StatefulWidget {
   static const routeName = '/home';
+
+  @override
+  _ProductsOverviewScreenState createState() => _ProductsOverviewScreenState();
+}
+
+class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
+  var _isInit = true;
+  var _isLoading = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      Provider.of<Products>(context).fetchAndSetProducts().then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    }
+    _isInit = false;
+  }
+
   AppBar appBar(context) {
     return AppBar(
       backgroundColor: Colors.white,
@@ -87,8 +114,6 @@ class ProductsOverviewScreen extends StatelessWidget {
     );
   }
 
-  /* *************************************************** */
-
   @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<Products>(context);
@@ -97,7 +122,7 @@ class ProductsOverviewScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: appBar(context),
       drawer: DrawerWidget(),
-      body: GridView.builder(
+      body: _isLoading ? circularProgress() : GridView.builder(
         padding: const EdgeInsets.all(10.0),
         itemCount: products.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

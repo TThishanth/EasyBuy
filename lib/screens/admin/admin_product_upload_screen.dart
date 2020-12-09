@@ -24,6 +24,7 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
   TextEditingController _priceController = TextEditingController();
   TextEditingController _infoController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   String _productId = Uuid().v4();
   bool _isUploading = false;
   File _file;
@@ -55,36 +56,59 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
   }
 
   handleSubmit() async {
+    final _isValid = _formKey.currentState.validate();
     FocusScope.of(context).unfocus();
 
-    setState(() {
-      _isUploading = true;
-    });
+    if (_isValid) {
+      _formKey.currentState.save();
 
-    await compressImage();
+      setState(() {
+        _isUploading = true;
+      });
 
-    String _mediaUrl = await uploadImage(_file);
+      await compressImage();
 
-    Provider.of<Products>(context, listen: false).createPostInFirestore(
-      productId: _productId,
-      mediaUrl: _mediaUrl,
-      title: _titleController.text.trim(),
-      price: _priceController.text.trim(),
-      info: _infoController.text.trim(),
-      description: _descriptionController.text.trim(),
-    );
+      String _mediaUrl = await uploadImage(_file);
 
-    setState(() {
-      _file = null;
-      _isUploading = false;
-      _productId = Uuid().v4();
-      _titleController.clear();
-      _priceController.clear();
-      _infoController.clear();
-      _descriptionController.clear();
-    });
+      Provider.of<Products>(context, listen: false)
+          .addProduct(
+        productId: _productId,
+        mediaUrl: _mediaUrl,
+        title: _titleController.text.trim(),
+        price: _priceController.text.trim(),
+        info: _infoController.text.trim(),
+        description: _descriptionController.text.trim(),
+      )
+          .catchError((error) {
+        return showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('An error occurred!'),
+            content: Text('Something went wrong.'),
+            actions: [
+              FlatButton(
+                child: Text('Ok'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      }).then((_) {
+        setState(() {
+          _file = null;
+          _isUploading = false;
+          _productId = Uuid().v4();
+          _titleController.clear();
+          _priceController.clear();
+          _infoController.clear();
+          _descriptionController.clear();
+        });
 
-    Navigator.of(context).pushReplacementNamed(AdminHomeScreen.routeName);
+        Navigator.of(context).pushReplacementNamed(AdminHomeScreen.routeName);
+      });
+    }
   }
 
   /* **************************************************************** */
@@ -161,107 +185,142 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
         onTap: () {
           FocusScope.of(context).requestFocus(FocusNode());
         },
-        child: ListView(
-          children: [
-            _isUploading ? linearProgress() : Text(''),
-            Container(
-              height: 210.0,
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: Center(
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: FileImage(_file),
-                        fit: BoxFit.cover,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              _isUploading ? linearProgress() : Text(''),
+              Container(
+                height: 210.0,
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: FileImage(_file),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(
-              height: 12.0,
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.title,
-                color: Theme.of(context).primaryColor,
+              SizedBox(
+                height: 12.0,
               ),
-              title: Container(
-                width: 250.0,
-                child: TextField(
-                  controller: _titleController,
-                  textInputAction: TextInputAction.next,
-                  style: TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                    hintText: 'Product Title',
-                    border: InputBorder.none,
+              ListTile(
+                leading: Icon(
+                  Icons.title,
+                  color: Theme.of(context).primaryColor,
+                ),
+                title: Container(
+                  width: 250.0,
+                  child: TextFormField(
+                    controller: _titleController,
+                    textInputAction: TextInputAction.next,
+                    style: TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                      hintText: 'Product Title',
+                      border: InputBorder.none,
+                    ),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter the product title.';
+                      }
+                      return null;
+                    },
                   ),
                 ),
               ),
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(
-                Icons.money,
-                color: Theme.of(context).primaryColor,
-              ),
-              title: Container(
-                width: 250.0,
-                child: TextField(
-                  controller: _priceController,
-                  textInputAction: TextInputAction.next,
-                  keyboardType: TextInputType.number,
-                  style: TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                    hintText: 'Product Price',
-                    border: InputBorder.none,
+              Divider(),
+              ListTile(
+                leading: Icon(
+                  Icons.money,
+                  color: Theme.of(context).primaryColor,
+                ),
+                title: Container(
+                  width: 250.0,
+                  child: TextFormField(
+                    controller: _priceController,
+                    textInputAction: TextInputAction.next,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                      hintText: 'Product Price',
+                      border: InputBorder.none,
+                    ),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter the product price.';
+                      } else if (double.parse(value) == null) {
+                        return 'Please enter a valid number.';
+                      } else if (double.parse(value) <= 0) {
+                        return 'Please enter a number greater than zero.';
+                      }
+                      return null;
+                    },
                   ),
                 ),
               ),
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(
-                Icons.info,
-                color: Theme.of(context).primaryColor,
-              ),
-              title: Container(
-                width: 250.0,
-                child: TextField(
-                  controller: _infoController,
-                  textInputAction: TextInputAction.next,
-                  style: TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                    hintText: 'Product Short Information',
-                    border: InputBorder.none,
+              Divider(),
+              ListTile(
+                leading: Icon(
+                  Icons.info,
+                  color: Theme.of(context).primaryColor,
+                ),
+                title: Container(
+                  width: 250.0,
+                  child: TextFormField(
+                    controller: _infoController,
+                    textInputAction: TextInputAction.next,
+                    style: TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                      hintText: 'Product Short Information',
+                      border: InputBorder.none,
+                    ),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter the product description.';
+                      } else if (value.length < 10) {
+                        return 'Should be atleast 10 characters long.';
+                      }
+                      return null;
+                    },
                   ),
                 ),
               ),
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(
-                Icons.description,
-                color: Theme.of(context).primaryColor,
-              ),
-              title: Container(
-                width: 250.0,
-                child: TextField(
-                  controller: _descriptionController,
-                  maxLines: 3,
-                  keyboardType: TextInputType.multiline,
-                  style: TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                    hintText: 'Product Description',
-                    border: InputBorder.none,
+              Divider(),
+              ListTile(
+                leading: Icon(
+                  Icons.description,
+                  color: Theme.of(context).primaryColor,
+                ),
+                title: Container(
+                  width: 250.0,
+                  child: TextFormField(
+                    controller: _descriptionController,
+                    maxLines: 3,
+                    keyboardType: TextInputType.multiline,
+                    style: TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                      hintText: 'Product Description',
+                      border: InputBorder.none,
+                    ),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter the product description.';
+                      } else if (value.length < 50) {
+                        return 'Should be atleast 50 characters long.';
+                      }
+                      return null;
+                    },
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

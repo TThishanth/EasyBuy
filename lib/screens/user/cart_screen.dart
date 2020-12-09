@@ -1,11 +1,24 @@
 import 'package:eCommerce/providers/card_provider.dart';
 import 'package:eCommerce/providers/orders_provider.dart';
 import 'package:eCommerce/widgets/cart_item_widget.dart';
+import 'package:eCommerce/widgets/progress_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   static const routeName = '/cart';
+
+  @override
+  _CartScreenState createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  final userId = FirebaseAuth.instance.currentUser.uid;
+  String cartId = Uuid().v4();
+  var _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<Cart>(context);
@@ -40,14 +53,28 @@ class CartScreen extends StatelessWidget {
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
                     FlatButton(
-                      child: Text('ORDER NOW'),
-                      onPressed: () {
-                        Provider.of<Orders>(context, listen: false).addOrder(
-                          cart.items.values.toList(),
-                          cart.totalAmount,
-                        );
-                        cart.clear();
-                      },
+                      child: _isLoading ? circularProgress() : Text('ORDER NOW'),
+                      onPressed: (cart.totalAmount <= 0 || _isLoading)
+                          ? null
+                          : () {
+                              setState(() {
+                                _isLoading = true;
+                              });
+                              Provider.of<Orders>(context, listen: false)
+                                  .addOrder(
+                                cart.items.values.toList(),
+                                cart.totalAmount,
+                                userId,
+                                cartId,
+                              )
+                                  .then((_) {
+                                cart.clear();
+                                setState(() {
+                                  _isLoading = false;
+                                  cartId = Uuid().v4();
+                                });
+                              });
+                            },
                       textColor: Theme.of(context).primaryColor,
                     ),
                   ],

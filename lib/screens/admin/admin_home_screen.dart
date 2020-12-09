@@ -1,13 +1,11 @@
-//import 'dart:io';
-
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eCommerce/providers/products_provider.dart';
 import 'package:eCommerce/screens/admin/admin_product_upload_screen.dart';
-//import 'package:eCommerce/screens/admin/admin_edit_product_screen.dart';
 import 'package:eCommerce/screens/auth/auth_screen.dart';
 import 'package:eCommerce/services/auth_services.dart';
 import 'package:eCommerce/widgets/admin_product_item_widget.dart';
+import 'package:eCommerce/widgets/progress_widget.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,11 +25,29 @@ class AdminHomeScreen extends StatefulWidget {
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int currentIndex = 0;
   final _picker = ImagePicker();
+  var _isInit = true;
+  var _isLoading = false;
 
   void changePage(int index) {
     setState(() {
       currentIndex = index;
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<Products>(context).fetchAndSetProducts().then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    }
+    _isInit = false;
   }
 
   /* ******************************************************************* */
@@ -264,11 +280,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
         centerTitle: true,
       ),
-      body: Container(
+      body: _isLoading ? circularProgress() : Container(
         padding: EdgeInsets.all(8.0),
         child: ListView.builder(
           itemCount: productsData.items.length,
           itemBuilder: (context, index) => UserProductItem(
+            id: productsData.items[index].id,
             title: productsData.items[index].title,
             imageUrl: productsData.items[index].imageUrl,
           ),

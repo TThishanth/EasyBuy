@@ -1,7 +1,6 @@
 import 'package:eCommerce/providers/card_provider.dart';
 import 'package:eCommerce/providers/orders_provider.dart';
 import 'package:eCommerce/providers/products_provider.dart';
-import 'package:eCommerce/screens/admin/admin_edit_product_screen.dart';
 import 'package:eCommerce/screens/admin/admin_home_screen.dart';
 import 'package:eCommerce/screens/admin/admin_product_upload_screen.dart';
 import 'package:eCommerce/screens/splash_screen.dart';
@@ -52,7 +51,6 @@ class MyApp extends StatelessWidget {
           CartScreen.routeName: (ctx) => CartScreen(),
           OrdersScreen.routeName: (ctx) => OrdersScreen(),
           ProductsOverviewScreen.routeName: (ctx) => ProductsOverviewScreen(),
-          EditProductScreen.routeName: (ctx) => EditProductScreen(),
           AdminHomeScreen.routeName: (ctx) => AdminHomeScreen(),
           AdminUploadScreen.routeName: (ctx) => AdminUploadScreen(),
         },

@@ -1,10 +1,20 @@
 import 'package:eCommerce/providers/card_provider.dart';
 import 'package:eCommerce/providers/product_provider.dart';
 import 'package:eCommerce/screens/user/product_detail_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
-class ProductItem extends StatelessWidget {
+class ProductItem extends StatefulWidget {
+  @override
+  _ProductItemState createState() => _ProductItemState();
+}
+
+class _ProductItemState extends State<ProductItem> {
+  final ownerId = FirebaseAuth.instance.currentUser.uid;
+  String cartId = Uuid().v4();
+
   @override
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(
@@ -52,7 +62,7 @@ class ProductItem extends StatelessWidget {
                   product.isFavorite ? Icons.favorite : Icons.favorite_border),
               color: Colors.deepOrange,
               onPressed: () {
-                product.toggleFavoriteStatus();
+                product.toggleFavoriteStatus(product.id);
               },
             ),
           ),
@@ -72,6 +82,8 @@ class ProductItem extends StatelessWidget {
                 product.id,
                 product.price,
                 product.title,
+                ownerId,
+                cartId,
               );
 
               Scaffold.of(context).hideCurrentSnackBar();
@@ -94,6 +106,10 @@ class ProductItem extends StatelessWidget {
                   ),
                 ),
               );
+
+              setState(() {
+                cartId = Uuid().v4();
+              });
             },
           ),
         ),
