@@ -6,6 +6,7 @@ import 'package:eCommerce/screens/admin/admin_product_upload_screen.dart';
 import 'package:eCommerce/screens/auth/auth_screen.dart';
 import 'package:eCommerce/services/auth_services.dart';
 import 'package:eCommerce/widgets/admin_product_item_widget.dart';
+import 'package:eCommerce/widgets/order_item_widget.dart';
 import 'package:eCommerce/widgets/progress_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -17,7 +18,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 final storageRef = FirebaseStorage.instance.ref();
 final productsRef = FirebaseFirestore.instance.collection('products');
-final adminProductOrders = FirebaseFirestore.instance.collection('adminOrders');
 
 class AdminHomeScreen extends StatefulWidget {
   static const routeName = '/admin';
@@ -195,7 +195,27 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
         centerTitle: true,
       ),
-      body: ordersData.orders.isEmpty ? emptyOrdersScreen(isPotrait) : Container(),
+      body: ordersData.orders.isEmpty ? emptyOrdersScreen(isPotrait) : Container(
+        child: FutureBuilder(
+          future: Provider.of<Orders>(context, listen: false)
+              .fetchAndSetOrders(userId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return circularProgress();
+            }
+            return Consumer<Orders>(
+              builder: (context, orderData, child) => orderData.orders.isEmpty
+                  ? emptyOrdersScreen(isPotrait)
+                  : ListView.builder(
+                      itemCount: orderData.orders.length,
+                      itemBuilder: (context, index) => OrderItemWidget(
+                        order: orderData.orders[index],
+                      ),
+                    ),
+            );
+          },
+        ),
+      ),
     );
   }
 

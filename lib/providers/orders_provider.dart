@@ -1,5 +1,4 @@
 import 'package:eCommerce/providers/card_provider.dart';
-import 'package:eCommerce/screens/admin/admin_home_screen.dart';
 import 'package:eCommerce/screens/home_screen.dart';
 import 'package:flutter/foundation.dart';
 
@@ -61,21 +60,6 @@ class Orders with ChangeNotifier {
 
   Future<void> addOrder(List<CartItem> cartProducts, double total,
       String userId, String cartId) async {
-    await adminProductOrders.doc(cartId).set({
-      'id': cartId,
-      'ownerId': userId,
-      'amount': total,
-      'dateTime': DateTime.now().toIso8601String(),
-      'products': cartProducts
-          .map((cp) => {
-                'id': cp.id,
-                'title': cp.title,
-                'quantity': cp.quantity,
-                'price': cp.price,
-              })
-          .toList(),
-    });
-
     await userProductOrders
         .doc(userId)
         .collection('userOrders')
