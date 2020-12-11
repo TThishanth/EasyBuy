@@ -28,7 +28,7 @@ class Products with ChangeNotifier {
     return _items.firstWhere((prod) => prod.id == id);
   }
 
-  Future<void> fetchAndSetProducts() async {
+  Future<void> fetchAndSetProducts(userId) async {
     try {
       final docsCollection = await productsRef.get();
       final List<Product> loadedProducts = [];
@@ -41,7 +41,7 @@ class Products with ChangeNotifier {
             description: prod['description'],
             price: double.parse(prod['price']),
             status: prod['status'],
-            isFavorite: prod['isFavorite'] == true,
+            isFavorite: prod['favorites'][userId] ?? false,
             imageUrl: prod['imageUrl'],
           ),
         );
@@ -49,7 +49,6 @@ class Products with ChangeNotifier {
 
       _items = loadedProducts;
       notifyListeners();
-      
     } catch (error) {
       throw error;
     }
@@ -57,6 +56,7 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct({
     String productId,
+    String adminId,
     String mediaUrl,
     String title,
     String price,
@@ -65,14 +65,15 @@ class Products with ChangeNotifier {
   }) {
     return productsRef.doc(productId).set({
       'id': productId,
+      'adminId': adminId,
       'title': title,
       'shortInfo': info,
       'description': description,
       'price': price,
       'status': 'available',
       'imageUrl': mediaUrl,
-      'isFavorite': 'false',
       'publishedDate': DateTime.now(),
+      'favorites': {},
     }).then((_) {
       final newProduct = Product(
         id: productId,
@@ -81,7 +82,6 @@ class Products with ChangeNotifier {
         description: description,
         price: double.parse(price),
         status: 'available',
-        isFavorite: false,
         imageUrl: mediaUrl,
       );
 

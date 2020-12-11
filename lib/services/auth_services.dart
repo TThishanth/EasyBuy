@@ -41,7 +41,6 @@ class Authentication extends ChangeNotifier {
         'email': email,
         'profilePhoto': 'https://ui-avatars.com/api/?name=$userName&background=FF5500&color=fff&length=1%27',
         'role': 'user', // user for normal users, admin for admin
-        'userCardList': {},
         'timestamp': _timestamp,
       }).whenComplete(() {
         Navigator.pushReplacement(

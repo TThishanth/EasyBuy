@@ -4,6 +4,7 @@ import 'package:eCommerce/widgets/cart_item_widget.dart';
 import 'package:eCommerce/widgets/progress_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -19,9 +20,43 @@ class _CartScreenState extends State<CartScreen> {
   String cartId = Uuid().v4();
   var _isLoading = false;
 
+  Container emptyCartScreen(isPotrait) {
+    return Container(
+      margin: EdgeInsets.only(top: isPotrait ? 100.0 : 10.0),
+      width: double.infinity,
+      child: Center(
+        child: Column(
+          children: [
+            Container(
+              child: SvgPicture.asset(
+                'assets/images/empty_cart.svg',
+                height: isPotrait ? 200.0 : 120.0,
+              ),
+            ),
+            SizedBox(
+              height: 20.0,
+            ),
+            Container(
+              child: Text(
+                'Cart Empty',
+                style: TextStyle(
+                  fontSize: isPotrait ? 30.0 : 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).accentColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<Cart>(context);
+    final isPotrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -53,7 +88,8 @@ class _CartScreenState extends State<CartScreen> {
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
                     FlatButton(
-                      child: _isLoading ? circularProgress() : Text('ORDER NOW'),
+                      child:
+                          _isLoading ? circularProgress() : Text('ORDER NOW'),
                       onPressed: (cart.totalAmount <= 0 || _isLoading)
                           ? null
                           : () {
@@ -85,16 +121,18 @@ class _CartScreenState extends State<CartScreen> {
               height: 10.0,
             ),
             Expanded(
-              child: ListView.builder(
-                itemCount: cart.itemCount,
-                itemBuilder: (context, index) => CartItemWidget(
-                  id: cart.items.values.toList()[index].id,
-                  productId: cart.items.keys.toList()[index],
-                  price: cart.items.values.toList()[index].price,
-                  quantity: cart.items.values.toList()[index].quantity,
-                  title: cart.items.values.toList()[index].title,
-                ),
-              ),
+              child: cart.items.isEmpty
+                  ? emptyCartScreen(isPotrait)
+                  : ListView.builder(
+                      itemCount: cart.itemCount,
+                      itemBuilder: (context, index) => CartItemWidget(
+                        id: cart.items.values.toList()[index].id,
+                        productId: cart.items.keys.toList()[index],
+                        price: cart.items.values.toList()[index].price,
+                        quantity: cart.items.values.toList()[index].quantity,
+                        title: cart.items.values.toList()[index].title,
+                      ),
+                    ),
             ),
           ],
         ),

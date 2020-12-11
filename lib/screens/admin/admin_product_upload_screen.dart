@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:eCommerce/providers/products_provider.dart';
 import 'package:eCommerce/screens/admin/admin_home_screen.dart';
 import 'package:eCommerce/widgets/progress_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,6 +25,7 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
   TextEditingController _priceController = TextEditingController();
   TextEditingController _infoController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
+  final adminId = FirebaseAuth.instance.currentUser.uid;
   final _formKey = GlobalKey<FormState>();
   String _productId = Uuid().v4();
   bool _isUploading = false;
@@ -73,6 +75,7 @@ class _AdminUploadScreenState extends State<AdminUploadScreen> {
       Provider.of<Products>(context, listen: false)
           .addProduct(
         productId: _productId,
+        adminId: adminId,
         mediaUrl: _mediaUrl,
         title: _titleController.text.trim(),
         price: _priceController.text.trim(),

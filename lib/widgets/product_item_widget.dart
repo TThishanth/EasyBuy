@@ -62,7 +62,7 @@ class _ProductItemState extends State<ProductItem> {
                   product.isFavorite ? Icons.favorite : Icons.favorite_border),
               color: Colors.deepOrange,
               onPressed: () {
-                product.toggleFavoriteStatus(product.id);
+                product.toggleFavoriteStatus(productId: product.id, userId: ownerId);
               },
             ),
           ),

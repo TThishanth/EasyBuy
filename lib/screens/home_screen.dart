@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 final usersRef = FirebaseFirestore.instance.collection('users');
-final orderedProducts = FirebaseFirestore.instance.collection('orders');
+final userProductOrders = FirebaseFirestore.instance.collection('userOrders');
 
 class HomeScreen extends StatefulWidget {
   @override

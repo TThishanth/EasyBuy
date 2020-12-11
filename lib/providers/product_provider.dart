@@ -22,16 +22,15 @@ class Product with ChangeNotifier {
     this.isFavorite = false,
   });
 
-  Future<void> toggleFavoriteStatus(id) async {
+  Future<void> toggleFavoriteStatus({productId, userId}) async {
     final oldStatus = isFavorite;
     isFavorite = !isFavorite;
     notifyListeners();
 
     try {
-      await productsRef.doc(id).update({
-        'isFavorite': isFavorite,
+      await productsRef.doc(productId).update({
+        'favorites.$userId': isFavorite,
       });
-
     } catch (error) {
       isFavorite = oldStatus;
       notifyListeners();

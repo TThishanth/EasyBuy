@@ -4,7 +4,9 @@ import 'package:eCommerce/screens/user/cart_screen.dart';
 import 'package:eCommerce/widgets/drawer_widget.dart';
 import 'package:eCommerce/widgets/product_item_widget.dart';
 import 'package:eCommerce/widgets/progress_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -17,25 +19,7 @@ class ProductsOverviewScreen extends StatefulWidget {
 }
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
-  var _isInit = true;
-  var _isLoading = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_isInit) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      Provider.of<Products>(context).fetchAndSetProducts().then((_) {
-        setState(() {
-          _isLoading = false;
-        });
-      });
-    }
-    _isInit = false;
-  }
+  var userId = FirebaseAuth.instance.currentUser.uid;
 
   AppBar appBar(context) {
     return AppBar(
@@ -114,26 +98,70 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
     );
   }
 
+
+  Container emptyProductsScreen(isPotrait){
+    return Container(
+      margin: EdgeInsets.only(top: isPotrait ? 200.0 : 50.0),
+      width: double.infinity,
+      child: Center(
+        child: Column(
+          children: [
+            Container(
+              child: SvgPicture.asset(
+                'assets/images/no_products.svg',
+                height: isPotrait ? 200.0 : 160.0,
+              ),
+            ),
+            SizedBox(
+              height: 20.0,
+            ),
+            Container(
+              child: Text(
+                'Products Not Available',
+                style: TextStyle(
+                  fontSize: isPotrait ? 30.0 : 25.0,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).accentColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final productsData = Provider.of<Products>(context);
-    final products = productsData.items;
+    final isPotrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: appBar(context),
       drawer: DrawerWidget(),
-      body: _isLoading ? circularProgress() : GridView.builder(
-        padding: const EdgeInsets.all(10.0),
-        itemCount: products.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 1,
-          childAspectRatio: 3 / 2,
-          mainAxisSpacing: 20.0,
-        ),
-        itemBuilder: (context, index) => ChangeNotifierProvider.value(
-          value: products[index],
-          child: ProductItem(),
-        ),
+      body: FutureBuilder(
+        future: Provider.of<Products>(context, listen: false)
+            .fetchAndSetProducts(userId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return circularProgress();
+          }
+          return Consumer<Products>(
+            builder: (context, productsData, _) => productsData.items.isEmpty ? emptyProductsScreen(isPotrait) : GridView.builder(
+              padding: const EdgeInsets.all(10.0),
+              itemCount: productsData.items.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 1,
+                childAspectRatio: 3 / 2,
+                mainAxisSpacing: 20.0,
+              ),
+              itemBuilder: (context, index) => ChangeNotifierProvider.value(
+                value: productsData.items[index],
+                child: ProductItem(),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

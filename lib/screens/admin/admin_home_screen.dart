@@ -1,11 +1,13 @@
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eCommerce/providers/orders_provider.dart';
 import 'package:eCommerce/providers/products_provider.dart';
 import 'package:eCommerce/screens/admin/admin_product_upload_screen.dart';
 import 'package:eCommerce/screens/auth/auth_screen.dart';
 import 'package:eCommerce/services/auth_services.dart';
 import 'package:eCommerce/widgets/admin_product_item_widget.dart';
 import 'package:eCommerce/widgets/progress_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,6 +17,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 final storageRef = FirebaseStorage.instance.ref();
 final productsRef = FirebaseFirestore.instance.collection('products');
+final adminProductOrders = FirebaseFirestore.instance.collection('adminOrders');
 
 class AdminHomeScreen extends StatefulWidget {
   static const routeName = '/admin';
@@ -23,6 +26,7 @@ class AdminHomeScreen extends StatefulWidget {
 }
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
+  var userId = FirebaseAuth.instance.currentUser.uid;
   int currentIndex = 0;
   final _picker = ImagePicker();
   var _isInit = true;
@@ -41,7 +45,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       setState(() {
         _isLoading = true;
       });
-      Provider.of<Products>(context).fetchAndSetProducts().then((_) {
+      Provider.of<Products>(context).fetchAndSetProducts(userId).then((_) {
         setState(() {
           _isLoading = false;
         });
@@ -127,7 +131,41 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   /* ******************************************************************** */
 
-  Scaffold myOrdersScreen() {
+  Container emptyOrdersScreen(isPotrait) {
+    return Container(
+      margin: EdgeInsets.only(top: isPotrait ? 150.0 : 40.0),
+      width: double.infinity,
+      child: Center(
+        child: Column(
+          children: [
+            Container(
+              child: SvgPicture.asset(
+                'assets/images/no_order.svg',
+                height: isPotrait ? 200.0 : 180.0,
+              ),
+            ),
+            SizedBox(
+              height: 20.0,
+            ),
+            Container(
+              child: Text(
+                'No Orders',
+                style: TextStyle(
+                  fontSize: isPotrait ? 30.0 : 30.0,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).accentColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Scaffold myOrdersScreen(ordersData) {
+    final isPotrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -157,7 +195,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
         centerTitle: true,
       ),
-      body: Container(),
+      body: ordersData.orders.isEmpty ? emptyOrdersScreen(isPotrait) : Container(),
     );
   }
 
@@ -250,7 +288,41 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   /* ******************************************************************* */
 
+  Container emptyProductsScreen(isPotrait) {
+    return Container(
+      margin: EdgeInsets.only(top: isPotrait ? 170.0 : 20.0),
+      width: double.infinity,
+      child: Center(
+        child: Column(
+          children: [
+            Container(
+              child: SvgPicture.asset(
+                'assets/images/no_products.svg',
+                height: isPotrait ? 200.0 : 150.0,
+              ),
+            ),
+            SizedBox(
+              height: 20.0,
+            ),
+            Container(
+              child: Text(
+                'Products Not Available',
+                style: TextStyle(
+                  fontSize: isPotrait ? 30.0 : 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).accentColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Scaffold homePageScreen(productsData) {
+    final isPotrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -280,17 +352,21 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
         centerTitle: true,
       ),
-      body: _isLoading ? circularProgress() : Container(
-        padding: EdgeInsets.all(8.0),
-        child: ListView.builder(
-          itemCount: productsData.items.length,
-          itemBuilder: (context, index) => UserProductItem(
-            id: productsData.items[index].id,
-            title: productsData.items[index].title,
-            imageUrl: productsData.items[index].imageUrl,
-          ),
-        ),
-      ),
+      body: _isLoading
+          ? circularProgress()
+          : Container(
+              padding: EdgeInsets.all(8.0),
+              child: productsData.items.isEmpty
+                  ? emptyProductsScreen(isPotrait)
+                  : ListView.builder(
+                      itemCount: productsData.items.length,
+                      itemBuilder: (context, index) => UserProductItem(
+                        id: productsData.items[index].id,
+                        title: productsData.items[index].title,
+                        imageUrl: productsData.items[index].imageUrl,
+                      ),
+                    ),
+            ),
     );
   }
 
@@ -299,6 +375,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<Products>(context);
+    final ordersData = Provider.of<Orders>(context);
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -360,7 +437,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         body: (currentIndex == 0)
             ? homePageScreen(productsData)
             : (currentIndex == 1)
-                ? myOrdersScreen()
+                ? myOrdersScreen(ordersData)
                 : logOutScreen(),
       ),
     );

@@ -65,6 +65,9 @@ flutter:
     - animation/splash.json
     - assets/images/auth.jpg
     - assets/images/logout.svg
+    - assets/images/empty_cart.svg
+    - assets/images/no_order.svg
+    - assets/images/no_products.svg
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
