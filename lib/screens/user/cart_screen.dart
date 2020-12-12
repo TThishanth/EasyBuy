@@ -1,12 +1,9 @@
 import 'package:eCommerce/providers/card_provider.dart';
-import 'package:eCommerce/providers/orders_provider.dart';
+import 'package:eCommerce/screens/user/user_address_screen.dart';
 import 'package:eCommerce/widgets/cart_item_widget.dart';
-import 'package:eCommerce/widgets/progress_widget.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 
 class CartScreen extends StatefulWidget {
   static const routeName = '/cart';
@@ -16,9 +13,6 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final userId = FirebaseAuth.instance.currentUser.uid;
-  String cartId = Uuid().v4();
-  var _isLoading = false;
 
   Container emptyCartScreen(isPotrait) {
     return Container(
@@ -88,31 +82,43 @@ class _CartScreenState extends State<CartScreen> {
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
                     FlatButton(
-                      child:
-                          _isLoading ? circularProgress() : Text('ORDER NOW'),
-                      onPressed: (cart.totalAmount <= 0 || _isLoading)
-                          ? null
-                          : () {
-                              setState(() {
-                                _isLoading = true;
-                              });
-                              Provider.of<Orders>(context, listen: false)
-                                  .addOrder(
-                                cart.items.values.toList(),
-                                cart.totalAmount,
-                                userId,
-                                cartId,
-                              )
-                                  .then((_) {
-                                cart.clear();
-                                setState(() {
-                                  _isLoading = false;
-                                  cartId = Uuid().v4();
-                                });
-                              });
-                            },
-                      textColor: Theme.of(context).primaryColor,
-                    ),
+                      child: Text(
+                        'PROCEED',
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pushReplacementNamed(AddressScreen.routeName);
+                      },
+                    )
+
+                    //FlatButton(
+                    //  child: _isLoading ? circularProgress() : Text('PROCEED'),
+                    //  onPressed: (cart.totalAmount <= 0 || _isLoading)
+                    //      ? null
+                    //      : () {
+                    //          setState(() {
+                    //            _isLoading = true;
+                    //          });
+                    //          Provider.of<Orders>(context, listen: false)
+                    //              .addOrder(
+                    //            cart.items.values.toList(),
+                    //            cart.totalAmount,
+                    //            userId,
+                    //            cartId,
+                    //          )
+                    //              .then((_) {
+                    //            cart.clear();
+                    //            Navigator.of(context).pushReplacementNamed(AddressScreen.routeName);
+                    //            setState(() {
+                    //              _isLoading = false;
+                    //              cartId = Uuid().v4();
+                    //            });
+                    //          });
+                    //        },
+                    //  textColor: Theme.of(context).primaryColor,
+                    //),
                   ],
                 ),
               ),

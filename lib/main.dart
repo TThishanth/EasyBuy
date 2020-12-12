@@ -1,3 +1,4 @@
+import 'package:eCommerce/providers/address_provider.dart';
 import 'package:eCommerce/providers/card_provider.dart';
 import 'package:eCommerce/providers/orders_provider.dart';
 import 'package:eCommerce/providers/products_provider.dart';
@@ -6,8 +7,10 @@ import 'package:eCommerce/screens/admin/admin_product_upload_screen.dart';
 import 'package:eCommerce/screens/splash_screen.dart';
 import 'package:eCommerce/screens/user/cart_screen.dart';
 import 'package:eCommerce/screens/user/orders_screen.dart';
+import 'package:eCommerce/screens/user/place_order_splash_screen.dart';
 import 'package:eCommerce/screens/user/product_detail_screen.dart';
 import 'package:eCommerce/screens/user/product_overview_screen.dart';
+import 'package:eCommerce/screens/user/user_address_screen.dart';
 import 'package:eCommerce/services/auth_services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +39,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(
           value: Orders(),
         ),
+        ChangeNotifierProvider.value(
+          value: Addresses(),
+        ),
       ],
       child: MaterialApp(
         title: 'Easy Buy',
@@ -53,6 +59,8 @@ class MyApp extends StatelessWidget {
           ProductsOverviewScreen.routeName: (ctx) => ProductsOverviewScreen(),
           AdminHomeScreen.routeName: (ctx) => AdminHomeScreen(),
           AdminUploadScreen.routeName: (ctx) => AdminUploadScreen(),
+          AddressScreen.routeName: (ctx) => AddressScreen(),
+          OrderSplashScreen.routeName: (ctx) => OrderSplashScreen(),
         },
       ),
     );

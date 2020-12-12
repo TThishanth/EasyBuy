@@ -163,7 +163,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
-  Scaffold myOrdersScreen(ordersData) {
+  Scaffold myOrdersScreen() {
     final isPotrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
     return Scaffold(
@@ -195,26 +195,26 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
         centerTitle: true,
       ),
-      body: ordersData.orders.isEmpty ? emptyOrdersScreen(isPotrait) : Container(
-        child: FutureBuilder(
-          future: Provider.of<Orders>(context, listen: false)
-              .fetchAndSetOrders(userId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return circularProgress();
-            }
-            return Consumer<Orders>(
-              builder: (context, orderData, child) => orderData.orders.isEmpty
-                  ? emptyOrdersScreen(isPotrait)
-                  : ListView.builder(
-                      itemCount: orderData.orders.length,
-                      itemBuilder: (context, index) => OrderItemWidget(
-                        order: orderData.orders[index],
-                      ),
+      body: FutureBuilder(
+        future: Provider.of<Orders>(
+          context,
+          listen: false,
+        ).fetchAndSetOrders(userId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return circularProgress();
+          }
+          return Consumer<Orders>(
+            builder: (context, orderData, child) => orderData.orders.isEmpty
+                ? emptyOrdersScreen(isPotrait)
+                : ListView.builder(
+                    itemCount: orderData.orders.length,
+                    itemBuilder: (context, index) => OrderItemWidget(
+                      order: orderData.orders[index],
                     ),
-            );
-          },
-        ),
+                  ),
+          );
+        },
       ),
     );
   }
@@ -395,7 +395,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<Products>(context);
-    final ordersData = Provider.of<Orders>(context);
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -457,7 +456,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         body: (currentIndex == 0)
             ? homePageScreen(productsData)
             : (currentIndex == 1)
-                ? myOrdersScreen(ordersData)
+                ? myOrdersScreen()
                 : logOutScreen(),
       ),
     );

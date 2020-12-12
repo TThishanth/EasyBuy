@@ -6,6 +6,8 @@ class OrderItem {
   final String id;
   final String ownerId;
   final double amount;
+  final String addressId;
+  final String shippingStatus;
   final List<CartItem> products;
   final DateTime dateTime;
 
@@ -13,6 +15,8 @@ class OrderItem {
     @required this.id,
     @required this.ownerId,
     @required this.amount,
+    @required this.addressId,
+    this.shippingStatus,
     @required this.products,
     @required this.dateTime,
   });
@@ -29,13 +33,16 @@ class Orders with ChangeNotifier {
     try {
       final docsCollection =
           await userProductOrders.doc(userId).collection('userOrders').get();
+
       final List<OrderItem> loadedOrders = [];
+      
       docsCollection.docs.forEach((orderItem) {
         loadedOrders.add(
           OrderItem(
             id: orderItem['id'],
             ownerId: orderItem['ownerId'],
             amount: orderItem['amount'],
+            addressId: orderItem['addressId'],
             dateTime: DateTime.parse(orderItem['dateTime']),
             products: (orderItem['products'] as List<dynamic>)
                 .map(
@@ -58,8 +65,13 @@ class Orders with ChangeNotifier {
     }
   }
 
-  Future<void> addOrder(List<CartItem> cartProducts, double total,
-      String userId, String cartId) async {
+  Future<void> addOrder(
+    List<CartItem> cartProducts,
+    double total,
+    String userId,
+    String cartId,
+    String addressId,
+  ) async {
     await userProductOrders
         .doc(userId)
         .collection('userOrders')
@@ -67,6 +79,7 @@ class Orders with ChangeNotifier {
         .set({
       'id': cartId,
       'ownerId': userId,
+      'addressId': addressId,
       'amount': total,
       'dateTime': DateTime.now().toIso8601String(),
       'products': cartProducts
@@ -83,6 +96,7 @@ class Orders with ChangeNotifier {
         OrderItem(
           id: cartId,
           ownerId: userId,
+          addressId: addressId,
           amount: total,
           dateTime: DateTime.now(),
           products: cartProducts,

@@ -63,6 +63,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - animation/splash.json
+    - animation/home-delivery.json
     - assets/images/auth.jpg
     - assets/images/logout.svg
     - assets/images/empty_cart.svg

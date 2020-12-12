@@ -60,8 +60,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
         ),
         drawer: DrawerWidget(),
         body: FutureBuilder(
-          future: Provider.of<Orders>(context, listen: false)
-              .fetchAndSetOrders(userId),
+          future: Provider.of<Orders>(
+            context,
+            listen: false,
+          ).fetchAndSetOrders(userId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return circularProgress();
