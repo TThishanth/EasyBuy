@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:eCommerce/providers/card_provider.dart';
 import 'package:eCommerce/providers/products_provider.dart';
 import 'package:eCommerce/screens/user/product_overview_screen.dart';
-//import 'package:eCommerce/screens/user/product_overview_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -17,7 +15,6 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  final ownerId = FirebaseAuth.instance.currentUser.uid;
   String cartId = Uuid().v4();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -26,7 +23,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       product.id,
       product.price,
       product.title,
-      ownerId,
       cartId,
     );
 

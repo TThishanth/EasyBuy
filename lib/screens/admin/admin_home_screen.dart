@@ -5,8 +5,8 @@ import 'package:eCommerce/providers/products_provider.dart';
 import 'package:eCommerce/screens/admin/admin_product_upload_screen.dart';
 import 'package:eCommerce/screens/auth/auth_screen.dart';
 import 'package:eCommerce/services/auth_services.dart';
+import 'package:eCommerce/widgets/admin_my_order.widget.dart';
 import 'package:eCommerce/widgets/admin_product_item_widget.dart';
-import 'package:eCommerce/widgets/order_item_widget.dart';
 import 'package:eCommerce/widgets/progress_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -18,6 +18,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 final storageRef = FirebaseStorage.instance.ref();
 final productsRef = FirebaseFirestore.instance.collection('products');
+final adminMyOrders = FirebaseFirestore.instance.collection('adminOrders');
 
 class AdminHomeScreen extends StatefulWidget {
   static const routeName = '/admin';
@@ -199,20 +200,21 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         future: Provider.of<Orders>(
           context,
           listen: false,
-        ).fetchAndSetOrders(userId),
+        ).adminFetchAndSetOrders(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return circularProgress();
           }
           return Consumer<Orders>(
-            builder: (context, orderData, child) => orderData.orders.isEmpty
-                ? emptyOrdersScreen(isPotrait)
-                : ListView.builder(
-                    itemCount: orderData.orders.length,
-                    itemBuilder: (context, index) => OrderItemWidget(
-                      order: orderData.orders[index],
-                    ),
-                  ),
+            builder: (context, adminOrderData, child) =>
+                adminOrderData.adminOrders.isEmpty
+                    ? emptyOrdersScreen(isPotrait)
+                    : ListView.builder(
+                        itemCount: adminOrderData.adminOrders.length,
+                        itemBuilder: (context, index) => AdminMyOrderWidget(
+                          order: adminOrderData.adminOrders[index],
+                        ),
+                      ),
           );
         },
       ),
@@ -383,6 +385,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       itemBuilder: (context, index) => UserProductItem(
                         id: productsData.items[index].id,
                         title: productsData.items[index].title,
+                        status: productsData.items[index].status,
+                        price: productsData.items[index].price.toString(),
                         imageUrl: productsData.items[index].imageUrl,
                       ),
                     ),

@@ -3,6 +3,7 @@ import 'package:eCommerce/widgets/address_item_widget.dart';
 import 'package:eCommerce/widgets/progress_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -253,7 +254,37 @@ class _AddressScreenState extends State<AddressScreen> {
 
   /* ********************************************************* */
 
-  emptyAddressScreen(isPotrait) {}
+  Container emptyAddressScreen(isPotrait) {
+    return Container(
+      margin: EdgeInsets.only(top: isPotrait ? 150.0 : 40.0),
+      width: double.infinity,
+      child: Center(
+        child: Column(
+          children: [
+            Container(
+              child: SvgPicture.asset(
+                'assets/images/add_address.svg',
+                height: isPotrait ? 200.0 : 180.0,
+              ),
+            ),
+            SizedBox(
+              height: 20.0,
+            ),
+            Container(
+              child: Text(
+                'Add Delivery Address',
+                style: TextStyle(
+                  fontSize: isPotrait ? 30.0 : 30.0,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).accentColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
 
   @override
@@ -282,7 +313,7 @@ class _AddressScreenState extends State<AddressScreen> {
             ),
             title: RichText(
               text: TextSpan(
-                text: 'Add',
+                text: 'Delivery',
                 style: GoogleFonts.galada(
                   textStyle: TextStyle(
                     fontSize: 30.0,

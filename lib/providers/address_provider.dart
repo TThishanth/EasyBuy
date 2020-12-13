@@ -36,9 +36,9 @@ class Addresses with ChangeNotifier {
     try {
       final docsCollection =
           await usersAddress.doc(userId).collection('userAddress').get();
-      
+
       final List<Address> loadedAddresses = [];
-      
+
       docsCollection.docs.forEach((address) {
         print(address['mobileNo']);
         loadedAddresses.add(
@@ -100,5 +100,35 @@ class Addresses with ChangeNotifier {
       _items.add(newAddress);
       notifyListeners();
     });
+  }
+
+  // Find Address for specific order
+  Address _addressData;
+
+  Address get addressData {
+    return _addressData;
+  }
+
+  Future<void> getOrderAddress(ownerId, addressId) async {
+    final addressData = await usersAddress
+        .doc(ownerId)
+        .collection('userAddress')
+        .doc(addressId)
+        .get();
+
+    final Address loadedAddresses = Address(
+      id: addressData.data()['id'],
+      userId: addressData.data()['userId'],
+      userName: addressData.data()['userName'],
+      mobileNo: addressData.data()['mobileNo'],
+      countryName: addressData.data()['countryName'],
+      provinceName: addressData.data()['provinceName'],
+      cityName: addressData.data()['cityName'],
+      streetName: addressData.data()['streetName'],
+      postalCode: addressData.data()['postalCode'],
+    );
+
+    _addressData = loadedAddresses;
+    notifyListeners();
   }
 }

@@ -1,8 +1,11 @@
 import 'dart:math';
 
 import 'package:eCommerce/providers/orders_provider.dart';
+import 'package:eCommerce/screens/user/product_overview_screen.dart';
+import 'package:eCommerce/widgets/progress_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class OrderItemWidget extends StatefulWidget {
   final OrderItem order;
@@ -14,6 +17,7 @@ class OrderItemWidget extends StatefulWidget {
 
 class _OrderItemWidgetState extends State<OrderItemWidget> {
   var _expanded = false;
+  var _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +26,9 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
       child: Column(
         children: [
           Card(
-            color: Theme.of(context).accentColor,
+            elevation: 5.0,
+            color: Colors.blue,
             child: ListTile(
-              
               title: Padding(
                 padding: const EdgeInsets.only(top: 10.0),
                 child: Text(
@@ -56,7 +60,7 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                 horizontal: 15.0,
                 vertical: 10.0,
               ),
-              height: min(widget.order.products.length * 20.0 + 150, 200),
+              height: min(widget.order.products.length * 20.0 + 200, 250),
               child: Column(
                 children: [
                   Expanded(
@@ -95,7 +99,6 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                       'Total Amount: \$${widget.order.amount.toString()}',
                       style: TextStyle(
                         fontSize: 18.0,
-                        //color: Colors.black,
                       ),
                     ),
                   ),
@@ -103,33 +106,66 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                     height: 5.0,
                   ),
                   Container(
-                    child: Text( 'Ordered Date & Time: ' +
-                      DateFormat('dd/MM/yyyy hh:mm')
-                          .format(widget.order.dateTime),
+                    child: Text(
+                      'Ordered Date & Time: ' +
+                          DateFormat('dd/MM/yyyy hh:mm')
+                              .format(widget.order.dateTime),
                       style: TextStyle(
                         color: Colors.black,
+                        fontSize: 16.0,
                       ),
                     ),
                   ),
                   SizedBox(
                     height: 10.0,
                   ),
-                  RaisedButton(
-                    elevation: 5.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                    color: Theme.of(context).primaryColor,
+                  Container(
                     child: Text(
-                      'Order Recieved',
+                      'shipping Status: ${widget.order.shippingStatus}',
                       style: TextStyle(
-                        color: Colors.white,
                         fontSize: 18.0,
+                        color: Colors.green,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    onPressed: () {},
                   ),
+                  SizedBox(
+                    height: 5.0,
+                  ),
+                  Divider(),
+                  _isLoading
+                      ? circularProgress()
+                      : RaisedButton(
+                          elevation: 5.0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                          color: Theme.of(context).primaryColor,
+                          child: Text(
+                            'Order Recieved',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isLoading = true;
+                            });
+                            Provider.of<Orders>(context, listen: false)
+                                .conformReceived(
+                              widget.order.ownerId,
+                              widget.order.id,
+                            )
+                                .then((_) {
+                              Navigator.of(context).pushReplacementNamed(ProductsOverviewScreen.routeName);
+                              setState(() {
+                                _isLoading = false;
+                              });
+                            });
+                          },
+                        ),
                 ],
               ),
             ),

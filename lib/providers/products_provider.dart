@@ -70,7 +70,7 @@ class Products with ChangeNotifier {
       'shortInfo': info,
       'description': description,
       'price': price,
-      'status': 'available',
+      'status': 'Available',
       'imageUrl': mediaUrl,
       'publishedDate': DateTime.now(),
       'favorites': {},
@@ -81,7 +81,7 @@ class Products with ChangeNotifier {
         shortInfo: info,
         description: description,
         price: double.parse(price),
-        status: 'available',
+        status: 'Available',
         imageUrl: mediaUrl,
       );
 
@@ -108,6 +108,14 @@ class Products with ChangeNotifier {
       throw error;
     }).then((_) {
       existingProduct = null;
+    });
+  }
+
+
+  Future<void> editProduct(productId, newStatus, newPrice) async {
+    await productsRef.doc(productId).update({
+      'status': newStatus,
+      'price': newPrice,
     });
   }
 }
